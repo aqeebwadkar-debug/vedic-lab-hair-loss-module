@@ -3,6 +3,7 @@ import { Wifi, Battery, Signal } from 'lucide-react';
 
 const PHONE_W = 430;
 const PHONE_H = 880;
+const MOBILE_BREAKPOINT = 768;
 
 interface MobileFrameProps {
   children: React.ReactNode;
@@ -12,6 +13,10 @@ interface MobileFrameProps {
 export default function MobileFrame({ children, points }: MobileFrameProps) {
   const [time, setTime] = useState('');
   const [scale, setScale] = useState(1);
+  // Initialise synchronously so there is no flash-of-wrong-layout on real devices.
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT
+  );
 
   useEffect(() => {
     const updateTime = () => {
@@ -28,7 +33,8 @@ export default function MobileFrame({ children, points }: MobileFrameProps) {
   }, []);
 
   useEffect(() => {
-    const updateScale = () => {
+    const update = () => {
+      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
       const s = Math.min(
         1,
         (window.innerHeight * 0.95) / PHONE_H,
@@ -36,23 +42,26 @@ export default function MobileFrame({ children, points }: MobileFrameProps) {
       );
       setScale(parseFloat(s.toFixed(4)));
     };
-    updateScale();
-    window.addEventListener('resize', updateScale);
-    return () => window.removeEventListener('resize', updateScale);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
   }, []);
 
+  // ─── Mobile (real device): strip the frame, go full-screen ───────────────
+  if (isMobile) {
+    return (
+      <div className="relative w-screen h-screen overflow-hidden flex flex-col bg-[#FAF8F5] font-sans antialiased text-[#1E2422]">
+        {children}
+      </div>
+    );
+  }
+
+  // ─── Desktop / tablet: existing scaled phone-mockup experience ───────────
   return (
     <div className="flex justify-center items-center bg-[#EFECE6] h-screen overflow-hidden font-sans antialiased text-[#1E2422]">
-      {/*
-        Sizer: occupies exactly the visual footprint of the scaled phone so
-        flexbox centering works without the phone being clipped by overflow-hidden.
-      */}
+      {/* Sizer matches the visual footprint so flexbox centering works without clipping */}
       <div style={{ width: PHONE_W * scale, height: PHONE_H * scale, position: 'relative', flexShrink: 0 }}>
-        {/*
-          Phone frame stays at its natural 430×880 px — all content, typography,
-          spacing, and cards are untouched. CSS scale shrinks the whole device
-          uniformly so nothing inside is compressed.
-        */}
+        {/* Phone frame stays at natural 430×880 px; CSS scale shrinks it uniformly */}
         <div
           style={{
             width: PHONE_W,
@@ -71,7 +80,7 @@ export default function MobileFrame({ children, points }: MobileFrameProps) {
             <div className="w-12 h-1 bg-[#151918] rounded-full ml-3" />
           </div>
 
-          {/* Dynamic Status Bar */}
+          {/* Status Bar */}
           <div className="h-[44px] bg-[#FAF8F5] px-6 pt-3 flex items-center justify-between text-[11px] font-bold text-[#1C2321] select-none z-40 font-sans tracking-tight">
             <div>{time || '09:41 AM'}</div>
             <div className="flex items-center gap-1.5 pt-0.5">
