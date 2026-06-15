@@ -1,0 +1,6 @@
+{
+  "name": "Vedic Lab",
+  "description": "Vedic Lab Hair Loss Management module with multi-stage personalized wellness assessment, routines, progress tracking, and expert consultations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
