@@ -5,6 +5,11 @@
   --font-sans: "Outfit", system-ui, -apple-system, sans-serif;
 }
 
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
 /* Custom visual micro-adjustments for smooth sliders & modal swipes */
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
